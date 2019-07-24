@@ -57,6 +57,8 @@ class VivadoKernel(Kernel):
                                   ["-mode", "tcl", "-nojournal", "-nolog"],
                                   encoding='utf-8', codec_errors='replace')
 
+            child.expect('\r\n')
+
             # Using IREPLWrapper to get incremental output
             self.vivadowrapper = IREPLWrapper(
                 child, u'Vivado% ', None, continuation_prompt=u'Vivado- ')
@@ -67,11 +69,20 @@ class VivadoKernel(Kernel):
         finally:
             signal.signal(signal.SIGINT, sig)
 
-    def process_output(self, output, code=''):
+    def process_output(self, output, code_length=0):
         if not self.silent:
             # vivado likes to echo your commands
             # Send standard output and likes to add a new line, in windows style
-            stream_content = {'name': 'stdout', 'text': output}
+            useful_output = output
+            useful_output = useful_output.replace('\r\n', '\n')
+            # For some reason, they like to add these weird characters
+            # for really long strings... this is dumb
+            useful_output = useful_output.replace(' \x08', '')
+
+            useful_output = useful_output[code_length:]
+            useful_output = useful_output.strip()
+
+            stream_content = {'name': 'stdout', 'text': useful_output}
             self.send_response(self.iopub_socket, 'stream', stream_content)
 
     def do_execute(self, code, silent, store_history=True,
@@ -84,9 +95,12 @@ class VivadoKernel(Kernel):
         interrupted = False
         try:
             code = code.rstrip()
+            # Put things in an if statement, that way vivado treats it as a
+            # single statement
+            code = "if true {\n" + code + "\n}"
             output = self.vivadowrapper.run_command(code)
             # output = self.vivadowrapper.child.before
-            self.process_output(output, code)
+            self.process_output(output, len(code))
         except KeyboardInterrupt:
             self.vivadowrapper.child.sendintr()
             interrupted = True
