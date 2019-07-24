@@ -58,7 +58,7 @@ class VivadoKernel(Kernel):
 
             # Using IREPLWrapper to get incremental output
             self.vivadowrapper = IREPLWrapper(
-                child, u'Vivado% ', None)
+                child, u'Vivado% ', None, continuation_prompt=u'Vivado- ')
         finally:
             signal.signal(signal.SIGINT, sig)
 
@@ -79,8 +79,8 @@ class VivadoKernel(Kernel):
         interrupted = False
         try:
             code = code.rstrip()
-            self.vivadowrapper.run_command(code)
-            output = self.vivadowrapper.child.before
+            output = self.vivadowrapper.run_command(code)
+            # output = self.vivadowrapper.child.before
             self.process_output(output, code)
         except KeyboardInterrupt:
             self.vivadowrapper.child.sendintr()
