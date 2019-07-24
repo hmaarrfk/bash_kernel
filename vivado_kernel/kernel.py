@@ -14,7 +14,7 @@ __version__ = '0.0.1'
 
 version_pat = re.compile(r'version (\d+(\.\d+)+)')
 
-vivado = "/opt/Xilinx/Vivado/2019.1/bin/vivado"
+vivado_path = "/opt/Xilinx/Vivado/2019.1/bin/vivado"
 
 class VivadoKernel(Kernel):
     implementation = 'vivado_kernel'
@@ -30,13 +30,13 @@ class VivadoKernel(Kernel):
     @property
     def banner(self):
         if self._banner is None:
-            self._banner = check_output([vivado, '-version']).decode('utf-8')
+            self._banner = check_output([vivado_path, '-version']).decode('utf-8')
         return self._banner
 
     language_info = {'name': 'vivado',
                      'codemirror_mode': 'shell',
-                     'mimetype': 'text/x-sh',
-                     'file_extension': '.sh'}
+                     'mimetype': 'text/x-tcl',
+                     'file_extension': '.tcl'}
 
     def __init__(self, **kwargs):
         Kernel.__init__(self, **kwargs)
@@ -53,12 +53,17 @@ class VivadoKernel(Kernel):
             # vivado() function of pexpect/replwrap.py.  Look at the
             # source code there for comments and context for
             # understanding the code here.
-            child = pexpect.spawn(vivado, ["-mode", "tcl", '-notrace'], # echo=False,
+            child = pexpect.spawn(vivado_path,
+                                  ["-mode", "tcl", "-nojournal", "-nolog"],
                                   encoding='utf-8', codec_errors='replace')
 
             # Using IREPLWrapper to get incremental output
             self.vivadowrapper = IREPLWrapper(
                 child, u'Vivado% ', None, continuation_prompt=u'Vivado- ')
+
+            for level in ["ERROR", "{CRITICAL WARNING}", "WARNING", "INFO", "STATUS"]:
+                self.vivadowrapper.run_command(
+                    f'set_msg_config -severity {level} -suppress')
         finally:
             signal.signal(signal.SIGINT, sig)
 
