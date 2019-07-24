@@ -20,7 +20,7 @@ def install_my_kernel_spec(user=True, prefix=None):
             json.dump(kernel_json, f, sort_keys=True)
         # TODO: Copy resources once they're specified
 
-        print('Installing IPython kernel spec')
+        print('Installing IPython kernel spec for Vivado')
         KernelSpecManager().install_kernel_spec(td, 'vivado', user=user, prefix=prefix)
 
 def _is_root():
