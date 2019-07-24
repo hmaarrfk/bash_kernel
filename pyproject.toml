@@ -3,10 +3,10 @@ requires = ["flit"]
 build-backend = "flit.buildapi"
 
 [tool.flit.metadata]
-module = "bash_kernel"
+module = "vivado_kernel"
 author = "Thomas Kluyver"
 author-email = "thomas@kluyver.me.uk"
-home-page = "https://github.com/takluyver/bash_kernel"
+home-page = "https://github.com/hmaarrfk/bash_kernel"
 requires = ["pexpect (>=4.0)"]
 description-file = "README.rst"
 classifiers = [
