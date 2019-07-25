@@ -2,6 +2,8 @@ from ipykernel.kernelbase import Kernel
 from pexpect import replwrap, EOF
 import pexpect
 
+from pathlib import Path
+
 IREPLWrapper = replwrap.REPLWrapper
 
 from subprocess import check_output
@@ -14,7 +16,21 @@ __version__ = '0.0.1'
 
 version_pat = re.compile(r'version (\d+(\.\d+)+)')
 
-vivado_path = "/opt/Xilinx/Vivado/2019.1/bin/vivado"
+
+def _find_vivado():
+    # Vivado likes to install in strange places
+    expected_top_dirs = [Path('/opt'), Path('/tools')]
+    # search for a few years in the future too.
+    # We probably will break before then
+    for year in range(2022, 2015, -1):
+        for build in range(4, 0, -1):
+            for top_dir in expected_top_dirs:
+                vivado_path = top_dir / f"Xilinx/Vivado/{year}.{build}/bin/vivado"
+                if vivado_path.is_file():
+                    return str(vivado_path)
+
+vivado_path = _find_vivado()
+
 
 class VivadoKernel(Kernel):
     implementation = 'vivado_kernel'
