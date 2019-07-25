@@ -6,11 +6,11 @@ import argparse
 from jupyter_client.kernelspec import KernelSpecManager
 from IPython.utils.tempdir import TemporaryDirectory
 
-kernel_json = {"argv":[sys.executable,"-m","vivado_kernel", "-f", "{connection_file}"],
- "display_name":"Vivado",
- "language":"vivado",
- "codemirror_mode":"shell",
- "env":{"PS1": "$"}
+kernel_json = {
+    "argv":[sys.executable,"-m","vivado_kernel", "-f", "{connection_file}"],
+    "display_name": "Vivado",
+    "language": "tcl",
+    "codemirror_mode": "shell",
 }
 
 def install_my_kernel_spec(user=True, prefix=None):
